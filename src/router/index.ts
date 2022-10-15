@@ -1,6 +1,7 @@
-// src/router/index.ts
-import KoaRouter from 'koa-router'
+import fs from 'fs'
 
-const router = new KoaRouter()
-
-export default router
+export const getAllFilesName = (dirname: string) => {
+  return fs
+    .readdirSync(dirname + '/router/modules')
+    .map(item => (dirname + '/router/modules/' + item).replaceAll('\\', '/'))
+}

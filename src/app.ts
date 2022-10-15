@@ -1,45 +1,23 @@
-// src/app.ts
-import Koa, { Context, DefaultContext, DefaultState } from 'koa'
-import router from './router'
-// @ts-ignore
-import views from 'koa-views'
-import json from 'koa-json'
+import Koa, { DefaultContext, DefaultState } from 'koa'
+// import mysql from 'mysql'
 // @ts-ignore
 import onerror from 'koa-onerror'
-import bodyparser from 'koa-bodyparser'
-import logger from 'koa-logger'
+// import NodeRsa from 'node-rsa'
+import { useCreate } from './koa-middleware/use'
+import { creaseRsa, RSAencryption } from './utils/encryption'
+import { Config } from './config'
+import { initMysql } from './database'
+import { createKoaServer } from 'routing-controllers'
+import 'reflect-metadata'
+import { getAllFilesName } from './router'
+const app: Koa<DefaultState, DefaultContext> = createKoaServer({
+  routePrefix: '/admin',
+  controllers: getAllFilesName(__dirname),
+})
 // 创建服务对象
-const app: Koa<DefaultState, DefaultContext> = new Koa()
-// error handler
+// initMysql(app)
+creaseRsa()
+Config.aesSecretKey = RSAencryption(Config.public)
+useCreate(app)
 onerror(app)
-
-// 引入路由
-app.use(router.routes())
-router.get('*', ctx => {
-  ctx.body = 'Hello Koa Template'
-})
-app.use(router.allowedMethods())
-app.use(
-  bodyparser({
-    enableTypes: ['json', 'form', 'text'],
-  }),
-)
-app.use(json())
-app.use(logger())
-app.use(
-  views(__dirname + '/views', {
-    extension: 'pug',
-  }),
-)
-// logger
-app.use(async (ctx: Context, next) => {
-  const start = Number(new Date())
-  await next()
-  const ms = Number(new Date()) - start
-  console.log(`${ctx.method} ${ctx.url} - ${ms}ms`)
-})
-// error-handling
-app.on('error', (err, ctx) => {
-  console.error('server error', err, ctx)
-})
 export default app

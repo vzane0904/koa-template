@@ -4,3 +4,4 @@
 - ts
 - eslint
 - git cz
+- sql
